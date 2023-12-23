@@ -1,1 +1,1 @@
-docker-compose==6.1.3
+docker==6.1.3
