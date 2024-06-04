@@ -263,6 +263,10 @@ if [[ ${SERVICE} == "iptables" ]]; then
 fi
 
 log_action_begin_msg "saving iptables rules"
+## if service is netfilter, and the systemd-networkd-wait-online service is masked, unmask it
+if [[ ${SERVICE} == "netfilter" ]]; then
+    sudo systemctl unmask systemd-networkd-wait-online &>> ${CWD}/netflix-proxy.log
+fi
 sudo service ${SERVICE}-persistent save &>> ${CWD}/netflix-proxy.log
 log_action_end_msg $?
 
@@ -301,7 +305,7 @@ log_action_end_msg $?
 log_action_begin_msg "installing Pyenv"
 sudo apt-get -y update &>> ${CWD}/netflix-proxy.log\
   && sudo apt-get -y install git make build-essential libssl-dev zlib1g-dev libbz2-dev\
-  libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev xz-utils sqlite3\
+  libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev xz-utils sqlite3 liblzma-dev\
   tk-dev &>> ${CWD}/netflix-proxy.log\
   ## check if pyenv is not installed
   if [[ ! -d ~/.pyenv ]]; then
