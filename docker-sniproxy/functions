@@ -49,7 +49,7 @@ function get_ext_ipaddr() {
       --connect-timeout ${TIMEOUT}\
       --max-time $((${TIMEOUT}*2))\
       http://ifconfig.co)
-    echo ${extip} | head -n 1 | awk '{print $1}'
+    echo ${extip} | head -n 1
 }
 
 
