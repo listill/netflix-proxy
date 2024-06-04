@@ -306,12 +306,7 @@ sudo apt-get -y update &>> ${CWD}/netflix-proxy.log\
   ## check if pyenv is not installed
   if [[ ! -d ~/.pyenv ]]; then
     curl https://pyenv.run | bash &>> ${CWD}/netflix-proxy.log
-    ## check pyenv virtualenv plugin
-    if [[ ! -d ~/.pyenv/plugins/pyenv-virtualenv ]]; then
-      git clone https://github.com/pyenv/pyenv-virtualenv.git ~/.pyenv/plugins/pyenv-virtualenv
-    else
-      echo 'Pyenv virtualenv plugin already installed'
-    fi
+    git clone https://github.com/pyenv/pyenv-virtualenv.git ~/.pyenv/plugins/pyenv-virtualenv &>> ${CWD}/netflix-proxy.log
     echo 'export PATH="$HOME/.pyenv/bin:$PATH"' >> ~/.bashrc\
     && echo 'eval "$(pyenv init -)"' >> ~/.bashrc\
     && echo 'eval "$(pyenv virtualenv-init -)"' >> ~/.bashrc\
