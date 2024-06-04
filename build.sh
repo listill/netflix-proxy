@@ -329,12 +329,17 @@ sudo apt-get install -y python3-pip &>> ${CWD}/netflix-proxy.log\
   else
     echo 'Python3.9 already installed'
   fi
-  pyenv local 3.9 &>> ${CWD}/netflix-proxy.log\
-    && pyenv virtualenv venv &>> ${CWD}/netflix-proxy.log\
-    && pyenv activate venv &>> ${CWD}/netflix-proxy.log\
-    && pip install pip --upgrade &>> ${CWD}/netflix-proxy.log\
-    && pip install -r requirements.txt &>> ${CWD}/netflix-proxy.log\
-    && pip install -r ${CWD}/auth/requirements.txt &>> ${CWD}/netflix-proxy.log
+  pyenv local 3.9 &>> ${CWD}/netflix-proxy.log
+  ## check if venv virt env is not already created
+  if [[ ! $(pyenv virtualenvs | grep venv) ]]; then
+    pyenv virtualenv venv &>> ${CWD}/netflix-proxy.log
+  else
+    echo 'Venv already created'
+  fi
+  pyenv activate venv &>> ${CWD}/netflix-proxy.log
+  pip install pip --upgrade &>> ${CWD}/netflix-proxy.log
+  pip install -r requirements.txt &>> ${CWD}/netflix-proxy.log
+  pip install -r ${CWD}/auth/requirements.txt &>> ${CWD}/netflix-proxy.log
 log_action_end_msg $?
 
 log_action_begin_msg "configuring admin backend"
@@ -358,20 +363,20 @@ log_action_end_msg $?
 
 if [[ "${DOCKER_BUILD}" == '1' ]]; then
     log_action_begin_msg "pulling and building docker containers from source"
-    sudo $(which docker-compose) build &>> ${CWD}/netflix-proxy.log
+    sudo $(pyenv which docker-compose) build &>> ${CWD}/netflix-proxy.log
     for service in dnsmasq-service dnsmasq-bogus-service caddy-service; do
         sudo $(which docker-compose) pull ${service} &>> ${CWD}/netflix-proxy.log
     done
     log_action_end_msg $?
 else
     log_action_begin_msg "pulling Docker containers"
-    sudo $(which docker-compose) pull &>> ${CWD}/netflix-proxy.log
+    sudo $(pyenv which docker-compose) pull &>> ${CWD}/netflix-proxy.log
     log_action_end_msg $?
 fi
 
 log_action_begin_msg "creating and starting Docker containers"
   EXTIP=${EXTIP} EXTIP6=${EXTIP6}\
-  $(which docker-compose) up -d &>> ${CWD}/netflix-proxy.log
+  $(pyenv which docker-compose) up -d &>> ${CWD}/netflix-proxy.log
 log_action_end_msg $?
 
 # configure appropriate init system
