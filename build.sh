@@ -305,13 +305,23 @@ sudo apt-get -y update &>> ${CWD}/netflix-proxy.log\
   tk-dev &>> ${CWD}/netflix-proxy.log\
   ## check if pyenv is not installed
   if [[ ! -d ~/.pyenv ]]; then
-    curl https://pyenv.run | bash &>> ${CWD}/netflix-proxy.log\
-    && echo 'export PATH="$HOME/.pyenv/bin:$PATH"' >> ~/.bashrc\
+    curl https://pyenv.run | bash &>> ${CWD}/netflix-proxy.log
+    ## check pyenv virtualenv plugin
+    if [[ ! -d ~/.pyenv/plugins/pyenv-virtualenv ]]; then
+      git clone https://github.com/pyenv/pyenv-virtualenv.git ~/.pyenv/plugins/pyenv-virtualenv
+    else
+      echo 'Pyenv virtualenv plugin already installed'
+    fi
+    echo 'export PATH="$HOME/.pyenv/bin:$PATH"' >> ~/.bashrc\
     && echo 'eval "$(pyenv init -)"' >> ~/.bashrc\
     && echo 'eval "$(pyenv virtualenv-init -)"' >> ~/.bashrc\
-    && source ~/.bashrc
+    && source ~/.bashrc\
+    && eval "$(pyenv init -)"\
+    && eval "$(pyenv virtualenv-init -)"
   else
-    echo 'Pyenv already installed'
+    echo 'Pyenv already installed'\
+    && eval "$(pyenv init -)"\
+    && eval "$(pyenv virtualenv-init -)"
   fi
 log_action_end_msg $?
 
@@ -322,18 +332,6 @@ sudo apt-get install -y python3-pip &>> ${CWD}/netflix-proxy.log\
     pyenv install 3.9 &>> ${CWD}/netflix-proxy.log
   else
     echo 'Python3.9 already installed'
-  fi
-  ## check pyenv virtualenv plugin
-  if [[ ! -d ~/.pyenv/plugins/pyenv-virtualenv ]]; then
-    git clone https://github.com/pyenv/pyenv-virtualenv.git ~/.pyenv/plugins/pyenv-virtualenv
-    if which pyenv-virtualenv >/dev/null; then 
-      eval "$(pyenv virtualenv-init -)";
-      source ~/.bashrc
-    fi
-  else
-    echo 'Pyenv virtualenv plugin already installed'
-    eval "$(pyenv init -)"
-    eval "$(pyenv virtualenv-init -)"
   fi
   pyenv local 3.9 &>> ${CWD}/netflix-proxy.log\
     && pyenv virtualenv venv &>> ${CWD}/netflix-proxy.log\
