@@ -298,14 +298,49 @@ if [[ "${IPV6}" == '1' ]] && [[ -n "${EXTIP6}" ]]; then
 fi
 log_action_end_msg $?
 
-log_action_begin_msg "installing Python3 and requirements"
+log_action_begin_msg "installing Pyenv"
 sudo apt-get -y update &>> ${CWD}/netflix-proxy.log\
-  && sudo apt-get -y install git python3.6 python3-venv python3-pip sqlite3 &>> ${CWD}/netflix-proxy.log\
-  && python3 -m venv venv &>> ${CWD}/netflix-proxy.log\
-  && source venv/bin/activate &>> ${CWD}/netflix-proxy.log\
-  && pip3 install pip --upgrade &>> ${CWD}/netflix-proxy.log\
-  && pip3 install -r requirements.txt &>> ${CWD}/netflix-proxy.log\
-  && pip3 install -r ${CWD}/auth/requirements.txt &>> ${CWD}/netflix-proxy.log
+  && sudo apt-get -y install git make build-essential libssl-dev zlib1g-dev libbz2-dev\
+  libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev xz-utils sqlite3\
+  tk-dev &>> ${CWD}/netflix-proxy.log\
+  ## check if pyenv is not installed
+  if [[ ! -d ~/.pyenv ]]; then
+    curl https://pyenv.run | bash &>> ${CWD}/netflix-proxy.log\
+    && echo 'export PATH="$HOME/.pyenv/bin:$PATH"' >> ~/.bashrc\
+    && echo 'eval "$(pyenv init -)"' >> ~/.bashrc\
+    && echo 'eval "$(pyenv virtualenv-init -)"' >> ~/.bashrc\
+    && source ~/.bashrc
+  else
+    echo 'Pyenv already installed'
+  fi
+log_action_end_msg $?
+
+log_action_begin_msg "installing Python3 and requirements"
+sudo apt-get install -y python3-pip &>> ${CWD}/netflix-proxy.log\
+  ## check if Python3.9 is not installed
+  if [[ ! $(pyenv versions | grep 3.9) ]]; then
+    pyenv install 3.9 &>> ${CWD}/netflix-proxy.log
+  else
+    echo 'Python3.9 already installed'
+  fi
+  ## check pyenv virtualenv plugin
+  if [[ ! -d ~/.pyenv/plugins/pyenv-virtualenv ]]; then
+    git clone https://github.com/pyenv/pyenv-virtualenv.git ~/.pyenv/plugins/pyenv-virtualenv
+    if which pyenv-virtualenv >/dev/null; then 
+      eval "$(pyenv virtualenv-init -)";
+      source ~/.bashrc
+    fi
+  else
+    echo 'Pyenv virtualenv plugin already installed'
+    eval "$(pyenv init -)"
+    eval "$(pyenv virtualenv-init -)"
+  fi
+  pyenv local 3.9 &>> ${CWD}/netflix-proxy.log\
+    && pyenv virtualenv venv &>> ${CWD}/netflix-proxy.log\
+    && pyenv activate venv &>> ${CWD}/netflix-proxy.log\
+    && pip install pip --upgrade &>> ${CWD}/netflix-proxy.log\
+    && pip install -r requirements.txt &>> ${CWD}/netflix-proxy.log\
+    && pip install -r ${CWD}/auth/requirements.txt &>> ${CWD}/netflix-proxy.log
 log_action_end_msg $?
 
 log_action_begin_msg "configuring admin backend"

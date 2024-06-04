@@ -1,2 +1,4 @@
+requests==2.26.0
 docker==6.1.3
+PyYAML=3.13
 docker-compose
